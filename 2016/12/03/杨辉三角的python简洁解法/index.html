@@ -18,11 +18,11 @@
     <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.css">
     <title>
         
-        利用 Python 爬取豆瓣电影排行榜 Top250 的数据｜Jasonlinkinbright&#39;s blog
+        杨辉三角的python简洁解法｜Jasonlinkinbright&#39;s blog
         
     </title>
 
-    <link rel="canonical" href="http://jasonlinkinbright.github.io/2016/11/25/利用-Python-爬取豆瓣电影排行榜-Top250-的数据/">
+    <link rel="canonical" href="http://jasonlinkinbright.github.io/2016/12/03/杨辉三角的python简洁解法/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -137,12 +137,12 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
                 <div class="post-heading">
-                    <h1>利用 Python 爬取豆瓣电影排行榜 Top250 的数据</h1>
+                    <h1>杨辉三角的python简洁解法</h1>
                     
                     <span class="meta">
                          作者 Jason Lin
                         <span>
-                          日期 2016-11-25
+                          日期 2016-12-03
                          </span>
                     </span>
                     <div class="tags text-center">
@@ -154,7 +154,7 @@
     </div>
     <div class="post-title-haojen">
         <span>
-            利用 Python 爬取豆瓣电影排行榜 Top250 的数据
+            杨辉三角的python简洁解法
         </span>
     </div>
 </header>
@@ -165,31 +165,42 @@
         <div class="row">
             <!-- Post Container -->
             <div class="col-lg-8 col-lg-offset-1 col-sm-9 post-container">
-                <p>平时利用在地铁公交的时间简单学习了解了 Python，学习参考的是<a href="http://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000" target="_blank" rel="external">廖雪峰的Python教程</a> ，但是要想学好，还是要上手练习才会有好的效果，于是周末就利用 Python 写了一个简单的爬虫，来获取豆瓣电影排行榜 Top250 的数据，实现了保存数据到文件，保存海报图片。</p>
-<p>我利用的是 <a href="http://www.python-requests.org/en/master/" target="_blank" rel="external">requests</a> (HTTP for Humans ,哈哈)和 <a href="http://www.python-requests.org/en/master/" target="_blank" rel="external">BeautifulSoup</a>，具体使用方法可参考官网，安装方式：</p>
+                <p>杨辉三角有很多实现，之前在网上看到一个python解法，运用了python生成器和列表生成式的内容，写起来就显得很简洁。</p>
+<p>先贴一下结果：</p>
 <blockquote>
-<p>sudo pip install requests<br>sudo pip install beautifulsoup4</p>
+<p>def triangles():<br>L = [1]<br>while True:<br>yield L<br>L.append(0)<br>L = [L[i - 1] + L[i] for i in range(len(L))]</p>
 </blockquote>
-<p>安装好以后就可以开始了，首先打开<a href="https://movie.douban.com/top250" target="_blank" rel="external">豆瓣电影排行榜</a>，查看网页源码<br><img src="http://img.blog.csdn.net/20161125224536335" alt="这里写图片描述"><br>箭头部分就是我们需要的数据，包括：排名，名字，评分，评分人数，短评，同时当我们查看下一页的时候，发现链接格式是这样的<br>“<a href="https://movie.douban.com/top250?start=25" target="_blank" rel="external">https://movie.douban.com/top250?start=25</a>“<br>我们可以得知网页是按 25 来分页的，于是代码如下：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">def movies_spider(start):</div><div class="line">global file_content</div><div class="line">url = &quot;https://movie.douban.com/top250?start=%d&quot; % start</div><div class="line">response = requests.get(url).text</div><div class="line">soup = BeautifulSoup(response)</div><div class="line">movie_list = soup.find_all(&apos;div&apos;, &#123;&apos;class&apos;: &apos;item&apos;&#125;)</div><div class="line">for item in movie_list:</div><div class="line">order = int(item.find(&apos;em&apos;).string)</div><div class="line">icon_path = item.find(&apos;img&apos;).get(&apos;src&apos;)</div><div class="line"></div><div class="line">info = item.find(&apos;div&apos;, &#123;&apos;class&apos;: &apos;info&apos;&#125;)</div><div class="line">name = info.find(&apos;span&apos;, &#123;&apos;class&apos;: &apos;title&apos;&#125;).string</div><div class="line">save_pic(icon_path, name)</div><div class="line">rating_num = info.find(&apos;span&apos;, &#123;&apos;class&apos;: &apos;rating_num&apos;&#125;).string</div><div class="line">total = info.find(&apos;span&apos;, &#123;&apos;class&apos;: &apos;rating_num&apos;&#125;).find_next_sibling().find_next_sibling().string</div><div class="line">inq = info.find(&apos;span&apos;, &#123;&apos;class&apos;: &apos;inq&apos;&#125;)</div><div class="line">try:</div><div class="line">quote = inq.get_text()</div><div class="line">except AttributeError:</div><div class="line">quote = &apos;None&apos;</div><div class="line">print(&quot;Type error&quot;)</div><div class="line"></div><div class="line">file_content += &quot;%d\t%s\t评分:%s\n\t%s\t简评:%s\n\n&quot; % (order, name, rating_num, total, quote)</div></pre></td></tr></table></figure>
-<p>这就是核心部分，其实只要结合 BeautifulSoup 的文档以及网页源码，还是挺容易理解的，那剩下的部分就是保存文件和保存图片，代码已经放到 Github ,有需要的可前往查看 <a href="https://github.com/JasonLinkinBright/CrawlerPractise" target="_blank" rel="external">Github</a></p>
-<p>参考链接</p>
-<p><a href="http://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000" target="_blank" rel="external">廖雪峰的个人网站python教程</a><br><a href="http://www.python-requests.org/en/master/" target="_blank" rel="external">requests</a><br><a href="http://www.python-requests.org/en/master/" target="_blank" rel="external">BeautifulSoup</a></p>
+<p>现在来分析下过程：</p>
+<blockquote>
+<p>1<br>1 1<br>1 2 1<br>1 3 3 1<br>1 4 6 4 1<br>. . . . . .</p>
+</blockquote>
+<p>虽然看着挺漂亮，但对解题没有卵帮助。<br>于是我从右边猛推了它一把  &lt;—大力猛推。<br>伴随着一声’啊呦’，杨辉三角形一屁股坐进了我精心设计好的墙角里。</p>
+<blockquote>
+<p>row<br>0    1<br>1    1 1<br>2    1 2 1<br>3    1 3 3 1<br>4    1 4 6 4 1<br>col  0 1 2 3 4</p>
+</blockquote>
+<p>听说，下雨天，笛卡尔坐标系(码农版)和帕斯卡三角形更配哦~ 【某芙广告部请联络我，洽谈代言事宜！】</p>
+<p>这不是巧了么？我可以用T(row,col)来代表杨辉三角形中的每一个元素对不对？<br>然后大家可以发现如下几个事实:<br>1.col==0 的这一列上的元素总是 1 ， 例如T(0,0),T(1,0),T(4,0)<br>2.col==row 的这一列上的元素总是 1, 例如 T(0,0),T(1,1),T(4,4)<br>3.(敲黑板,重点)  T(row,col)上的元素等于 T(row-1,col-1)+T(row-1,col)，<br>例如 T(4,3) == T(3,2)+T(3,3) 即 4 == 3 + 1<br>例如 T(4,2) == T(3,1)+T(3,2) 即 6 == 3 + 3<br>虽然讲得很有道理的样子，然而机智的小伙伴们还是一眼就看出了破绽。<br>介绍事实3时候，为什么不拿T(0,0),T(1,0)，T(1,1)这样的元素举例？<br>按我的分析 T(0,0) == T(-1,-1)+T(-1,0) ,这不翻车了么。妈蛋的，确实翻车了！</p>
+<p>def triangles():<br>L = [1] #所以在这个解法里，作者很机智，直接给第0行初始化一个[1]<br>while True:<br>yield L  # 生成第0行，问题解决。<br>。。。<br>我们再来看看第1行的情况，<br>T(1,0) == T(0,-1)+T(0,0) ,T(0,0)是1，T(0,-1)不存在。<br>T(1,1) == T(0,0)+T(0,1)  ,T(0,0)是1，T(0,1)不存在<br>根据事实1，事实2 我们知道T(1,0)和T(1,1)都是1,将已知量带入我们的式子.<br>1 = x+1 得x=0<br>1 = 1+x 得x=0<br>发现了没有，要想让这个算法进行下去，第0行元素命格不行【八字欠零，五行(xing2)缺零】，一共缺了前后两个零。</p>
+<p>#在假想的情况下，第0行如果能像图中这样补上两个0，那么生成第1行的时候就轻松愉快了。</p>
+<p>#上边我们分析过了生成第1行需要的T(0,-1)和T(0,1),现在已经到货.</p>
+<blockquote>
+<p>r<br>0 [0 1 0]<br>1    1 1<br>2    1 2 1<br>3    1 3 3 1<br>4    1 4 6 4 1<br>c -1 0 1 2 3 4</p>
+</blockquote>
+<p>那就这样定了，给第0行补0.</p>
+<p>def triangles():<br>L = [1]<br>while True:<br>yield L<br>L.append(0) #作者真的给上一行补了0，可是为什么只补了一个0？<br>L = [L[i - 1] + L[i] for i in range(len(L))] #生成第1行<br>这里真的是巧合了！！！<br>学习切片的时候，廖大说过列表倒数第一个元素的索引是-1。<br>所以，我们在上图里看到的T(0,-1),在python列表里是绕到后边去了。<br>自然界里的列表[0,1,0],各元素索引依次为 -1,0,1<br>python里的列表[1,0],各元素索引依次为0,1/-1,就像一个环，两端粘在了一起。</p>
+<p>看代码<br>def triangles():<br>L = [1]<br>while True:<br>yield L<br>L.append(0) #补完0后L的状态 [1,0]<br>L = [L[i - 1] + L[i] for i in range(len(L))] #生成第1行</p>
+<p>已知 L:[1,0] ,len(L):2 ,range(0,2)不包含2<br>列表生成式[L[i - 1] + L[i] for i in range(len(L))]会生成什么鬼？<br>当i=0时 L[i-1]+L[i] == 0+1 == 1<br>当i=1时 L[i-1]+L[i] == 1+0 == 1<br>所以这个列表生成式最终生成了 [1,1],然后将它赋给L。然后yield L.<br>然后生成第2行：</p>
+<p>def triangles():<br>L = [1]<br>while True:<br>yield L #生成第2行时的开局状态，L:[1,1]<br>L.append(0) #补0，[1,1,0]<br>L = [L[i - 1] + L[i] for i in range(len(L))] #生成第2行<br>然后生成第3行。<br>然后生成第n行。。。<br>完成，good job</p>
 
                 <hr>
                 
 
                 <ul class="pager">
                     
-                    <li class="previous">
-                        <a href="/2016/12/03/杨辉三角的python简洁解法/" data-toggle="tooltip" data-placement="top"
-                           title="杨辉三角的python简洁解法">&larr; Previous Post</a>
-                    </li>
-                    
                     
                     <li class="next">
-                        <a href="/2016/11/22/Android开发工程师的自我修养/" data-toggle="tooltip" data-placement="top"
-                           title="Android开发工程师的自我修养">Next Post &rarr;</a>
+                        <a href="/2016/11/25/利用-Python-爬取豆瓣电影排行榜-Top250-的数据/" data-toggle="tooltip" data-placement="top"
+                           title="利用 Python 爬取豆瓣电影排行榜 Top250 的数据">Next Post &rarr;</a>
                     </li>
                     
                 </ul>
