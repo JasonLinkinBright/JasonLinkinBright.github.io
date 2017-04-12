@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="林时均在 Github 上的个人博客">
+    <meta name="keyword" content="null">
+    <meta name="theme-color" content="#600090">
+    <meta name="msapplication-navbutton-color" content="#600090">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#600090">
+    <link rel="shortcut icon" href="https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-person-128.png">
+    <link rel="alternate" type="application/atom+xml" title="Jason Lin" href="/atom.xml">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.css">
+    <title>
+        
+        Android 文件存储策略｜Jasonlinkinbright&#39;s blog
+        
+    </title>
+
+    <link rel="canonical" href="http://jasonlinkinbright.github.io/2017/04/12/Android-文件存储策略/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/blog-style.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+</head>
+
+<style>
+
+    header.intro-header {
+        background-image: url('//o7bkkhiex.bkt.clouddn.com/lion-blur-bg.jpg')
+    }
+</style>
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="" class="animated fadeIn">
+<!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top " id="nav-top" data-ispost = "true" data-istags="false
+" data-ishome = "false" >
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand animated pulse" href="/">
+                <span class="brand-logo">
+                    Jason Lin
+                </span>
+                's Blog
+            </a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <!-- /.navbar-collapse -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+					
+                    
+					
+					
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+//    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+<!-- Main Content -->
+
+<!--only post-->
+
+
+<img class="wechat-title-img"
+     src="http://ocnnxadky.bkt.clouddn.com/16-8-29/97133290.jpg">
+
+
+<style>
+    
+    header.intro-header {
+        background-image: url('http://ocnnxadky.bkt.clouddn.com/16-8-29/97133290.jpg')
+    }
+
+    
+</style>
+
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <div class="post-heading">
+                    <h1>Android 文件存储策略</h1>
+                    
+                    <span class="meta">
+                         作者 Jason Lin
+                        <span>
+                          日期 2017-04-12
+                         </span>
+                    </span>
+                    <div class="tags text-center">
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="post-title-haojen">
+        <span>
+            Android 文件存储策略
+        </span>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <!-- Post Container -->
+            <div class="col-lg-8 col-lg-offset-1 col-sm-9 post-container">
+                <p>Android的文件存储有两种类型：&ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">内部存储</font></code>&ensp;和&ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">外部存储</font></code>&ensp;。</p>
+<p>首先来确定下一些易混淆的概念：</p>
+<ol>
+<li><p>内部存储 <strong>不是内存</strong>，内部存储位于系统中很特殊的一个位置。</p>
+</li>
+<li><p>外部存储 <strong>不一定是 SD 卡</strong>， 机身存储也是外部存储。比如 16GB 版本的安卓手机，机子本身就带了外部存储。对于开发来说，最关键的是，我们都是通过相同的 api 来访问可移动的 sdcard 或者手机自带的存储（外部存储）。</p>
+</li>
+<li><p>绝对路径是文件的 <strong>完整路径</strong>，例如d:\java\Hello.java，该路径中包含文件的完整路径d:\java以及文件的全名Hello.java。使用该路径可以唯一的找到一个文件，不会产生歧义。但是使用绝对路径在表示文件时，受到的限制很大，且不能在不同的操作系统下运行，因为不同操作系统下绝对路径的表达形式存在不同。</p>
+</li>
+<li><p>相对路径是文件的 <strong>部分路径</strong>，例如\test\Hello.java，该路径中只包含文件的部分路径\test和文件的全名Hello.java，部分路径是指当前路径下的子路径，例如当前程序在d:\abc下运行，则该文件的完整路径就是d:\abc\test。使用这种形式，可以更加通用的代表文件的位置，使得文件路径产生一定的灵活性。</p>
+</li>
+</ol>
+<h2 id="内部存储"><a href="#内部存储" class="headerlink" title="内部存储"></a>内部存储</h2><blockquote>
+<p>内部存储是指将应用程序中的数据以文件方式存储到设备的内部存储空间中（该文件位于 data/data/your_package_name/ 目录下）。</p>
+</blockquote>
+<p>如果想把文件存储在内部存储中，那么文件 <strong>默认只能被当前应用访问</strong>，且一个应用所创建的所有文件都在和应用包名相同的目录下。也就是说应用创建于内部存储的文件，与这个应用是关联起来的。当一个应用卸载之后，内部存储中的这些文件也被删除。理论上来讲,如果应用创建的文件设置为可读，那么其他 app 在知道你应用包名的情况下，也是可以访问这些文件的。</p>
+<p>需要注意的是，内部存储资源十分珍贵，它也是系统本身和系统应用程序主要的数据存储所在地，一旦内部存储空间耗尽，手机也就无法使用了。所以对于内部存储空间，我们要尽量避免使用。Shared Preferences 和 SQLite 数据库都是存储在内部存储空间上的。内部存储一般用 Context 来获取和操作。</p>
+<h2 id="外部存储"><a href="#外部存储" class="headerlink" title="外部存储"></a>外部存储</h2><blockquote>
+<p>don’t be confused by the word “external” here. This directory can<br>better be thought as media/shared storage. It is a filesystem that can<br>hold a relatively large amount of data and that is shared across all<br>applications (does not enforce permissions). Traditionally this is an<br>SD card, but it may also be implemented as built-in storage in a<br>device that is distinct from the protected internal storage and can be<br>mounted as a filesystem on a computer.<br>关于外部存储，在 api 中 Environment.getExternalStorageDirectory() 方法说得很清楚：</p>
+</blockquote>
+<p>外部存储可认为是一个拥有超大容量媒体存储库（敲重点：相册、音频处理相关的程序生成的文件都要放在这里啊），而且外部存储的表现形式不仅是 sd 卡，还有内置在手机的存储空间。所以不管是 sd 卡还是手机自身内置的存储空间，都是调用相同的 api。</p>
+<h2 id="内部存储的存储策略"><a href="#内部存储的存储策略" class="headerlink" title="内部存储的存储策略"></a>内部存储的存储策略</h2><p>内部存储根据文件类型大概可以可以分为三种：</p>
+<ol>
+<li><p>自定义（其路径为/data/data/Your Package Name/app_”your_defined<em>name”，文件名字系统默认会添加一个前缀“app</em>”）</p>
+</li>
+<li><p>Files（其路径为/data//data/Your Package Name/files), api 中提供了比较多的方法来操作该目录下的文件。</p>
+</li>
+<li><p>cache缓存（其路径为/data/data/Your Package Name/cache）是缓存文件的存放地址。</p>
+</li>
+</ol>
+<p>这三种一般的调用方式如下：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">       /* </div><div class="line">        * 1.创建并返回一个指定名称的目录，在这个目录下来存些东西 输出结果为： </div><div class="line">        *   getDir():/data/data/com.example.filedemo/app_abc </div><div class="line">        */  </div><div class="line">       File dir1 = getDir(&quot;abc&quot;, MODE_PRIVATE);  </div><div class="line">       Log.i(&quot;MainActivity&quot;, &quot;getDir():&quot; + dir1.toString());  </div><div class="line">         </div><div class="line">       /* </div><div class="line">        * 2.创建并返回一个目录，在这个目录下存储应用程序的数据文件 输出结果为： </div><div class="line">        *   getFilesDir():/data/data/com.example.filedemo/files </div><div class="line">        */  </div><div class="line">       File dir2 = getFilesDir();  </div><div class="line">       Log.i(&quot;MainActivity&quot;, &quot;getFilesDir():&quot; + dir2.toString());  </div><div class="line">         </div><div class="line">       /* </div><div class="line">        * 3.打开一个输出流对象，通过这个输出流对象可以向abc.txt文件中写入一些数据， </div><div class="line">        * abc.txt文件位于/data/data/com.example.filedemo/files下； </div><div class="line">        */  </div><div class="line">       try &#123;  </div><div class="line">           FileOutputStream out = openFileOutput(&quot;abc.txt&quot;, MODE_PRIVATE);  </div><div class="line">           out.write(&quot;hello world&quot;.getBytes());  </div><div class="line">           out.flush();  </div><div class="line">           out.close();  </div><div class="line">       &#125; catch (FileNotFoundException e) &#123;  </div><div class="line">           e.printStackTrace();  </div><div class="line">       &#125; catch (IOException e) &#123;  </div><div class="line">           e.printStackTrace();  </div><div class="line">       &#125;  </div><div class="line"> </div><div class="line">       /* </div><div class="line">        * 4.获取一个输入流对象，通过这个输入流对对象读取指定文件，这个文件在/data/data/com.example.filedemo/files下； </div><div class="line">        */  </div><div class="line">       try &#123;  </div><div class="line">           FileInputStream is = openFileInput(&quot;abc.txt&quot;);  </div><div class="line">           ByteArrayOutputStream out = new ByteArrayOutputStream();  </div><div class="line">           int len = 0;  </div><div class="line">           byte[] buf = new byte[4];  </div><div class="line">           while ((len = is.read(buf)) &gt; 0) &#123;  </div><div class="line">               out.write(buf, 0, len);  </div><div class="line">               out.flush();  </div><div class="line">           &#125;  </div><div class="line">           out.close();  </div><div class="line">           is.close();  </div><div class="line">           Log.i(&quot;MainActivity&quot;, &quot;openFileInput()读取到的数据：&quot;+out.toString());  </div><div class="line">       &#125; catch (FileNotFoundException e) &#123;  </div><div class="line">           e.printStackTrace();  </div><div class="line">       &#125; catch (IOException e) &#123;  </div><div class="line">           e.printStackTrace();  </div><div class="line">       &#125;  </div><div class="line">/* </div><div class="line">        * 5.创建并返回一个目录，在这个目录下存储应用程序的缓冲文件，当系统资源不足时，系统清除这下面的文件 </div><div class="line">        * 输出结果为：getCacheDir():/data/data/com.example.filedemo/cache </div><div class="line">        */  </div><div class="line">       File dir3 = getCacheDir();  </div><div class="line">       Log.i(&quot;MainActivity&quot;, &quot;getCacheDir():&quot; + dir3.toString());</div></pre></td></tr></table></figure>
+<p>有创建文件就有删除文件</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">/* </div><div class="line">        * 6.删除 /data/data/com.example.filedemo/files文件夹下面某个文件。 </div><div class="line">        * 重新执行一下第3条的代码，换个文件名，测试deleteFile()函数。 </div><div class="line">        */  </div><div class="line">       try &#123;  </div><div class="line">           FileOutputStream out = openFileOutput(&quot;abc2.txt&quot;, MODE_PRIVATE);  </div><div class="line">           out.write(&quot;hello world&quot;.getBytes());  </div><div class="line">           out.flush();  </div><div class="line">           out.close();  </div><div class="line">       &#125; catch (FileNotFoundException e) &#123;  </div><div class="line">           e.printStackTrace();  </div><div class="line">       &#125; catch (IOException e) &#123;  </div><div class="line">           e.printStackTrace();  </div><div class="line">       &#125;  </div><div class="line">       // 删除刚才创建的文件  </div><div class="line">       deleteFile(&quot;abc2.txt&quot;);</div></pre></td></tr></table></figure>
+<p>内部存储大概是这么些个套路。</p>
+<h2 id="外部存储的存储策略"><a href="#外部存储的存储策略" class="headerlink" title="外部存储的存储策略"></a>外部存储的存储策略</h2><p>外部存储主要有两种类型：</p>
+<ol>
+<li><p>公共文件。文件是可以被自由访问，且文件的数据对其他应用或者用户来说都是有意义的，当应用被卸载之后，其卸载前创建的文件仍然保留。比如camera应用，生成的照片大家都能访问，而且camera不在了，照片仍然在。<br>getExternalStoragePublicDirectory()方法接受一个字符串常量，即前面写到的Environment的那些静态常量，来确定想要访问的子目录。注意，如果返回的目录不存在，必须在向该目录写入文件前先创建它。</p>
+</li>
+<li><p>私有文件。由于是外部存储的原因，即使是私有类型的文件也能被其他程序访问，只不过一个应用私有的文件对其他应用其实是没有访问价值的（恶意程序除外）。外部存储上，应用私有文件的价值在于卸载之后，这些文件也会被删除，类似于内部存储。所有应用程序的外部存储的私有文件都放在根目录的Android/data/下，目录形式为/Android/data/<package_name>/</package_name></p>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">        /* </div><div class="line">         * 9.创建并返回外部存储文件目录，需要sd卡的的写入数据权限； </div><div class="line">         * 输出结果是：getExternalFilesDir():/mnt/sdcard/Android/data/com.example.filedemo/files/Music </div><div class="line">         */  </div><div class="line">        if (status.equals(Environment.MEDIA_MOUNTED)) &#123;  </div><div class="line">            File dir4 = getExternalFilesDir(Environment.DIRECTORY_MUSIC);  </div><div class="line">            Log.i(&quot;MainActivity&quot;, &quot;getExternalFilesDir():&quot; + dir4.toString());  </div><div class="line">        &#125;   </div><div class="line"></div><div class="line"></div><div class="line">        /* </div><div class="line">         * 10.创建并返回外部存储文件目录，需要sd卡的的写入数据权限； </div><div class="line">         * 输出结果是：getExternalFilesDir():/mnt/sdcard/Android/data/com.example.filedemo/files/albumName</div><div class="line">         */ </div><div class="line">		File file   = newFile(Environment.getExternalStoragePublicDirectory(</div><div class="line">		Environment.DIRECTORY_PICTURES), albumName);</div><div class="line">		if(!file.mkdirs()) &#123;</div><div class="line">			Log.e(LOG_TAG, &quot;Directory not created&quot;);</div><div class="line">&#125;</div><div class="line">	Log.i(&quot;MainActivity&quot;,&quot;getExternalStoragePublicDirectory():&quot;+file.toString());</div><div class="line"></div><div class="line">        /* </div><div class="line">         * 11.创建并返回外部存储缓冲目录，需要sd卡的写入数据权限； </div><div class="line">         * 输出结果是：getExternalCacheDir():/mnt/sdcard/Android/data/com.example.filedemo/cache </div><div class="line">         */  </div><div class="line">        if (status.equals(Environment.MEDIA_MOUNTED)) &#123;  </div><div class="line">            File dir5 = getExternalCacheDir();  </div><div class="line">            Log.i(&quot;MainActivity&quot;, &quot;getExternalCacheDir():&quot; + dir5.toString());  </div><div class="line">        &#125;</div></pre></td></tr></table></figure>
+<h2 id="文件的多级存储"><a href="#文件的多级存储" class="headerlink" title="文件的多级存储"></a>文件的多级存储</h2><p><strong>多级存储需要逐级创建文件夹</strong>，再强调一下，真的需要一级一级地创建，如果直接指向目标多级文件夹的地址，前序文件夹又没有建立，那么这个地址就访问不了。<br><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">//文件夹目录&quot;/sdcard/FirstFolder/SecondFolder&quot;，多级目录必须逐一创建  </div><div class="line">	 </div><div class="line">public static String FirstFolder=&quot;FirstFolder&quot;;//一级目录  </div><div class="line">	  </div><div class="line">public static String SecondFolder=&quot;SecondFolder&quot;;//二级目录  </div><div class="line">		  </div><div class="line">/*ALBUM_PATH取得机器的SD卡位置，File.separator为分隔符“/”*/  </div><div class="line">	  </div><div class="line">private final static String ALBUM_PATH=Environment.getExternalStorageDirectory()+File.separator+FirstFolder+File.separator;  </div><div class="line">	  </div><div class="line">private final static String Second_PATH=ALBUM_PATH+SecondFolder+File.separator;</div></pre></td></tr></table></figure></p>
+<p>创建过程</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">//检查手机上是否有外部存储卡  </div><div class="line"></div><div class="line">   boolean sdCardExist = Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED);  </div><div class="line"></div><div class="line">   if(!sdCardExist)  </div><div class="line"></div><div class="line">   &#123;//如果不存在SD卡，进行提示  </div><div class="line"></div><div class="line">        Toast.makeText(YuanTuActivity.this, &quot;请插入外部SD存储卡&quot;, Toast.LENGTH_SHORT).show();  </div><div class="line"></div><div class="line">   &#125;else&#123;//如果存在SD卡，判断文件夹目录是否存在  </div><div class="line"></div><div class="line">       //一级目录和二级目录必须分开创建  </div><div class="line"></div><div class="line">       File dirFirstFile=new File(ALBUM_PATH);//新建一级主目录  </div><div class="line"></div><div class="line">       if(!dirFirstFile.exists())&#123;//判断文件夹目录是否存在  </div><div class="line"></div><div class="line">            dirFirstFile.mkdir();//如果不存在则创建  </div><div class="line"></div><div class="line">       &#125;  </div><div class="line"></div><div class="line">       File dirSecondFile=new File(Second_PATH);//新建二级主目录  </div><div class="line"></div><div class="line">       if(!dirSecondFile.exists())&#123;//判断文件夹目录是否存在  </div><div class="line"></div><div class="line">            dirSecondFile.mkdir();//如果不存在则创建  </div><div class="line"></div><div class="line">       &#125;  </div><div class="line"></div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+
+                <hr>
+                
+
+                <ul class="pager">
+                    
+                    
+                    <li class="next">
+                        <a href="/2016/12/14/二叉排序树、红黑树、AVL树最简单的理解/" data-toggle="tooltip" data-placement="top"
+                           title="二叉排序树、红黑树、AVL树最简单的理解">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+
+                
+
+            </div>
+
+            <div class="hidden-xs col-sm-3 toc-col">
+                <div class="toc-wrap">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#内部存储"><span class="toc-text">内部存储</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#外部存储"><span class="toc-text">外部存储</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#内部存储的存储策略"><span class="toc-text">内部存储的存储策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#外部存储的存储策略"><span class="toc-text">外部存储的存储策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#文件的多级存储"><span class="toc-text">文件的多级存储</span></a></li></ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5 class="text-center">
+                        <a href="/tags/">FEATURED TAGS</a>
+                    </h5>
+                    <div class="tags">
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+        </div>
+
+    </div>
+</article>
+
+
+
+
+
+
+<!-- Footer -->
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <br>
+                <ul class="list-inline text-center">
+                
+                
+                
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/lin-shi-jun-30">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/lsj172933">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/jasonlinkinbright">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Jason Lin 2017
+                    <br>
+                    <span id="busuanzi_container_site_pv" style="font-size: 12px;">PV: <span id="busuanzi_value_site_pv"></span> Times</span>
+                    <br>
+                    Theme by <a href="https://haojen.github.io/">Haojen Ma</a>
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/blog.js"></script>
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://jasonlinkinbright.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("//cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- swiftype -->
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install','null','2.0.0');
+</script>
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!--wechat title img-->
+<img class="wechat-title-img" src="https://avatars2.githubusercontent.com/u/16745097?v=3&amp;u=d655524a8880764e100969efac730805add89319&amp;s=400">
+</body>
+
+</html>
