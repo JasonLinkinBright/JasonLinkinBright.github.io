@@ -170,17 +170,17 @@
 <ol>
 <li><p>未安装 app 时，如何做好引导页，引导用户下载后打开 app 后，是否可以打开之前唤醒前指定的页面或内容</p>
 </li>
-<li><p>如何绕过微信的 &ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">schema</font></code>&ensp; 屏蔽，在微信中唤醒 app 中，并打开指定页面</p>
+<li><p>如何绕过微信的 &ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">scheme</font></code>&ensp; 屏蔽，在微信中唤醒 app 中，并打开指定页面</p>
 </li>
 <li><p>iOS 专用的 &ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">universal link</font></code>&ensp;，Android 专用的 &ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">App Links</font></code>&ensp; 的集成要求，有哪些局限性。</p>
 </li>
 </ol>
 <h2 id="现实情况"><a href="#现实情况" class="headerlink" title="现实情况"></a>现实情况</h2><p>在实施过程中，还是有两个地方是没办法忽略的：</p>
-<p><strong><font color="LightSalmon" size="3" face="Ayuthaya">schema 被微信屏蔽了</font></strong></p>
-<p>除非一些和微信有合作的 app 可以进入到白名单，其他的应用在微信内都没办法通过自定义 schema 协议直接唤起 app，前端页面需要对唤起场景进行判断。</p>
+<p><strong><font color="LightSalmon" size="3" face="Ayuthaya">scheme 被微信屏蔽了</font></strong></p>
+<p>除非一些和微信有合作的 app 可以进入到白名单，其他的应用在微信内都没办法通过自定义 scheme 协议直接唤起 app，前端页面需要对唤起场景进行判断。</p>
 <p><strong><font color="LightSalmon" size="3" face="Ayuthaya">浏览器无法明确地判断本地是否已经安装 app</font></strong></p>
 <p>目前的取巧方案就是通过 &ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">setTimeOut</font></code>&ensp; 设置超时时间，在超时时间内唤起 app，然后获得成功失败回调，如果获得的是失败的回调，则说明本地没有安装 app，需要跳转到商店下载页面。</p>
-<h2 id="实现方案"><a href="#实现方案" class="headerlink" title="实现方案"></a>实现方案</h2><h3 id="踩坑方案"><a href="#踩坑方案" class="headerlink" title="踩坑方案"></a>踩坑方案</h3><p>鉴于在打开 url schema 的方法中，iOS9 和 iOS8/iOS7 区别很大，Android 不同厂商的是适配也不同，这里介绍的踩坑方案都是前人实践总结出来的。</p>
+<h2 id="实现方案"><a href="#实现方案" class="headerlink" title="实现方案"></a>实现方案</h2><h3 id="踩坑方案"><a href="#踩坑方案" class="headerlink" title="踩坑方案"></a>踩坑方案</h3><p>鉴于在打开 url scheme 的方法中，iOS9 和 iOS8/iOS7 区别很大，Android 不同厂商的是适配也不同，这里介绍的踩坑方案都是前人实践总结出来的。</p>
 <p>两种打开方式：</p>
 <p>一、 直接跳转：点击链接或者修改 &ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">window.location</font></code>&ensp;。<br>   点击链接：<br><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">&lt;a href=&quot;schemeUrl&quot;&gt;唤醒你的APP&lt;/a&gt;</div></pre></td></tr></table></figure></p>
 <p>   修改 window.location：</p>
@@ -188,8 +188,12 @@
 <p>这种情况，如果APP唤醒失败，或者APP未安装的话，很多时候都会跳到错误页，这很影响用户体验，而我们的要求可能是跳转到其他页面或者下载APP。</p>
 <p>二、&ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">iframe</font></code>&ensp; 跳转：在 body 上添加 iframe，设置 src 属性为跳转的 URL scheme</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">&lt;a href=&quot;APP下载地址&quot;&gt;下载或打开APP&lt;/a&gt;</div><div class="line">&lt;script&gt;</div><div class="line">  $(&apos;a&apos;).click(function() &#123;</div><div class="line">      var ifr = document.createElement(&apos;iframe&apos;);</div><div class="line">          ifr.src = &apos;自定义 URL scheme&apos;;</div><div class="line">          ifr.style.display = &apos;none&apos;;</div><div class="line"></div><div class="line">      document.body.appendChild(ifr);</div><div class="line">      setTimeout(function()&#123;</div><div class="line">          document.body.removeChild(ifr);</div><div class="line">      &#125;, 3000);</div><div class="line">  &#125;);</div><div class="line">&lt;/script&gt;</div></pre></td></tr></table></figure>
-<p>这一种方法不会引起页面内容可见的变化，不会导致浏览器历史记录的变化，<br>实现过程是：点击 a 标签时，打开 自定义 schema。若成功，就唤起 app，若失败，就到 href 属性，去到下载地址。</p>
-<p>理论上，在 Android 上这两种方式应该都是可以顺利实现的。但是 Android 的 chrome 内核从 chrome 25 以后就弃用了 iframe，不再支持通过 js 触发（非人为点击）或者通过设置 &ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">iframe src</font></code>&ensp; 地址来触发 schema 跳转。所以，后一种方法在适配上存在比较多的问题。故一般选择前面一种做法，即 href 的点击或者 window.location 跳转。</p>
+<p>这一种方法不会引起页面内容可见的变化，不会导致浏览器历史记录的变化，<br>实现过程是：点击 a 标签时，打开 自定义 scheme。若成功，就唤起 app，若失败，就到 href 属性，去到下载地址。</p>
+<p>相应的，在 Android 客户端这边，需要在 manifest 文件里面配置 intent-filter，如下：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">&lt;intent-filter&gt;</div><div class="line">    &lt;action android:name=&quot;android.intent.action.VIEW&quot; /&gt;</div><div class="line">    &lt;category android:name=&quot;android.intent.category.DEFAULT&quot; /&gt;</div><div class="line">    &lt;category android:name=&quot;android.intent.category.BROWSABLE&quot; /&gt;</div><div class="line">    &lt;data android:scheme=&quot;自定义 URL scheme&quot; /&gt;</div><div class="line">&lt;/intent-filter&gt;</div></pre></td></tr></table></figure>
+<p>注意这里的 &ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">intent-filter</font></code>&ensp; 的这几个配置不能再和&ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">action.MAIN</font></code>&ensp;放在一起。如果是在同一个 activity 中配置，那么可以配置两个&ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">intent-filter</font></code>&ensp;，比如</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">&lt;!-- 第一个filter --&gt;</div><div class="line">&lt;intent-filter&gt;</div><div class="line">    &lt;action android:name=&quot;android.intent.action.MAIN&quot; /&gt;</div><div class="line">    &lt;category android:name=&quot;android.intent.category.LAUNCHER&quot; /&gt;</div><div class="line">&lt;/intent-filter&gt;</div><div class="line"></div><div class="line">&lt;!-- 第二个filter --&gt;</div><div class="line">&lt;intent-filter&gt;</div><div class="line">    &lt;action android:name=&quot;android.intent.action.VIEW&quot; /&gt;</div><div class="line">    &lt;category android:name=&quot;android.intent.category.DEFAULT&quot; /&gt;</div><div class="line">    &lt;category android:name=&quot;android.intent.category.BROWSABLE&quot; /&gt;</div><div class="line">    &lt;data android:scheme=&quot;mls&quot; /&gt;</div><div class="line">&lt;/intent-filter&gt;</div></pre></td></tr></table></figure>
+<p>理论上，在 Android 上这两种方式应该都是可以顺利实现的。但是 Android 的 chrome 内核从 chrome 25 以后就弃用了 iframe，不再支持通过 js 触发（非人为点击）或者通过设置 &ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">iframe src</font></code>&ensp; 地址来触发 scheme 跳转。所以，后一种方法在适配上存在比较多的问题。故一般选择前面一种做法，即 href 的点击或者 window.location 跳转。</p>
 <p>使用第一种方案，setTimeOut 派上用场。</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">$(&apos;a&apos;).click(function() &#123;</div><div class="line">    location.href = &apos;自定义 URL scheme&apos;;</div><div class="line">    t = Date.now();</div><div class="line"></div><div class="line">    setTimeout(function()&#123;</div><div class="line">        if (Date.now() - t &lt; 1200) &#123;</div><div class="line">            location.href = &apos;Android 下载地址&apos;;</div><div class="line">        &#125;</div><div class="line">    &#125;, 1000);</div><div class="line"></div><div class="line">    return false;</div><div class="line"> 	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>理想过程是这样：浏览器尝试打开 URL scheme，在 1 秒计时后，检查当前时间，如果实际时间已过 1200 毫秒，说明唤起 app 成功（唤起 app 会让浏览器的定时器变慢）；如果没超过 1200 毫秒，很可能是没有安装应用，就跳到下载地址。</p>
@@ -199,7 +203,7 @@
 <figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">$(&apos;a&apos;).click(function() &#123;</div><div class="line">    location.href = &apos;自定义 URL scheme&apos;;</div><div class="line">    location.href = &apos;下载页&apos;;</div><div class="line">    location.reload();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>APP已安装这是没问题的，但如果APP未安装，跳 App Store 的请求会失败。 这时可以使用两个定时器：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">$(&apos;a&apos;).click(function() &#123;</div><div class="line">    location.href = &apos;自定义 URL scheme&apos;;</div><div class="line">    setTimeout(function() &#123;</div><div class="line">        location.href = &apos;下载页&apos;;</div><div class="line">    &#125;, 250);</div><div class="line"></div><div class="line">    setTimeout(function() &#123;</div><div class="line">        location.reload();</div><div class="line">    &#125;, 1000);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h2 id="universal-link-和-App-Links"><a href="#universal-link-和-App-Links" class="headerlink" title="universal link 和 App Links"></a>universal link 和 App Links</h2><p>这里的链接指的是深度链接&ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">（deep learning）</font></code>&ensp;，这是一种能够方便地通过传统的 http 链接来启动 app 或网站。通过唯一的网址，就可以链接一个特定的视图到你的 app 里面不需要特别的 schema。</p>
+<h2 id="universal-link-和-App-Links"><a href="#universal-link-和-App-Links" class="headerlink" title="universal link 和 App Links"></a>universal link 和 App Links</h2><p>这里的链接指的是深度链接&ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">（deep learning）</font></code>&ensp;，这是一种能够方便地通过传统的 http 链接来启动 app 或网站。通过唯一的网址，就可以链接一个特定的视图到你的 app 里面不需要特别的 scheme。</p>
 <h3 id="iOS-的-universal-link"><a href="#iOS-的-universal-link" class="headerlink" title="iOS 的 universal link"></a>iOS 的 universal link</h3><p>使用要求：<br><img src="http://img.blog.csdn.net/20170508192854375?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGluc2hpanVuMzM=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br>使用步骤：</p>
 <ol>
 <li><p>添加域名到 &ensp;<code><font color="LightSalmon" size="3" face="Ayuthaya">Capabilities</font></code>&ensp;<br>首先, 你必须在 Xcode 的 capabilities 里 添加你的 APP 域名, 必须用 applinks: 前置它：还添加一些你可能拥有的子域和扩展（www.domain.com, news.domain.com 等等）。这将使你的 APP 从你的域名请求一个特殊的 JSON 文件 apple-app-site-association。当你第一次启动 APP，它会从 <a href="https://domain.com/apple-app-site-association" target="_blank" rel="external">https://domain.com/apple-app-site-association</a>  下载这个文件。<br><img src="http://img.blog.csdn.net/20170508193612385?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGluc2hpanVuMzM=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
@@ -230,7 +234,7 @@
 </li>
 <li><p>使用<code>&lt;a&gt;</code> 标签的方式，来启动客户端。</p>
 </li>
-<li><p>区分渠道，判断浏览器内核区分是 Android 还是 iOS，在 Android 6.0 以上，可使用 app links，在 iOS9.0 以上，可使用 universal link.但是这两个都需要提供应用网站域名来绑定。其他系统版本通过自定义 schema 来截取。</p>
+<li><p>区分渠道，判断浏览器内核区分是 Android 还是 iOS，在 Android 6.0 以上，可使用 app links，在 iOS9.0 以上，可使用 universal link.但是这两个都需要提供应用网站域名来绑定。其他系统版本通过自定义 scheme 来截取。</p>
 </li>
 </ol>
 
