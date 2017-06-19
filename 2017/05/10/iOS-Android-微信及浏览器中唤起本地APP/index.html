@@ -236,6 +236,8 @@
 </li>
 <li><p>区分渠道，判断浏览器内核区分是 Android 还是 iOS，在 Android 6.0 以上，可使用 app links，在 iOS9.0 以上，可使用 universal link.但是这两个都需要提供应用网站域名来绑定。其他系统版本通过自定义 scheme 来截取。</p>
 </li>
+<li><p>补充下 Android 的调用流程：<br><img src="http://img.blog.csdn.net/20170605095552950?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGluc2hpanVuMzM=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br>由于好多初始化工作都在 SplashActivity 里面做了，所以开启的流程也是从上到下一步一步开页面，数据也需要传递过去。遇到需要登录的时候，先跳登录页，再跳详情页，把登录页从栈中清掉，返回时，就能从详情页 DetailActivity 回到 MainActivity 了。</p>
+</li>
 </ol>
 
                 <hr>
