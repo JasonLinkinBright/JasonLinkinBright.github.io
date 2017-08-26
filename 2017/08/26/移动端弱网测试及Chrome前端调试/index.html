@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="林时均在 Github 上的个人博客">
+    <meta name="keyword" content="null">
+    <meta name="theme-color" content="#600090">
+    <meta name="msapplication-navbutton-color" content="#600090">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#600090">
+    <link rel="shortcut icon" href="https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-person-128.png">
+    <link rel="alternate" type="application/atom+xml" title="Jason Lin" href="/atom.xml">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.css">
+    <title>
+        
+        移动端弱网测试及Chrome前端调试｜Jasonlinkinbright&#39;s blog
+        
+    </title>
+
+    <link rel="canonical" href="http://jasonlinkinbright.github.io/2017/08/26/移动端弱网测试及Chrome前端调试/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/blog-style.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+</head>
+
+<style>
+
+    header.intro-header {
+        background-image: url('//o7bkkhiex.bkt.clouddn.com/lion-blur-bg.jpg')
+    }
+</style>
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="" class="animated fadeIn">
+<!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top " id="nav-top" data-ispost = "true" data-istags="false
+" data-ishome = "false" >
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand animated pulse" href="/">
+                <span class="brand-logo">
+                    Jason Lin
+                </span>
+                's Blog
+            </a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <!-- /.navbar-collapse -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+					
+                    
+					
+					
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+//    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+<!-- Main Content -->
+
+<!--only post-->
+
+
+<img class="wechat-title-img"
+     src="http://ocnnxadky.bkt.clouddn.com/16-8-29/97133290.jpg">
+
+
+<style>
+    
+    header.intro-header {
+        background-image: url('http://ocnnxadky.bkt.clouddn.com/16-8-29/97133290.jpg')
+    }
+
+    
+</style>
+
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <div class="post-heading">
+                    <h1>移动端弱网测试及Chrome前端调试</h1>
+                    
+                    <span class="meta">
+                         作者 Jason Lin
+                        <span>
+                          日期 2017-08-26
+                         </span>
+                    </span>
+                    <div class="tags text-center">
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="post-title-haojen">
+        <span>
+            移动端弱网测试及Chrome前端调试
+        </span>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <!-- Post Container -->
+            <div class="col-lg-8 col-lg-offset-1 col-sm-9 post-container">
+                <h1 id="移动端弱网测试及Chrome前端调试"><a href="#移动端弱网测试及Chrome前端调试" class="headerlink" title="移动端弱网测试及Chrome前端调试"></a>移动端弱网测试及Chrome前端调试</h1><h2 id="需求概述"><a href="#需求概述" class="headerlink" title="需求概述"></a>需求概述</h2><p>在应用上线前，测试的同事都会利用各种各样的测试案例来发现平时开发环境中不容易发现的 bug，其中很大一部分 bug 都是由于复杂的网络环境导致资源加载不出来造成的。但是这些复杂网络环境是如何出现的呢？曾经看过有测试同学拿着手机在电梯里面进进出出，用来模拟 Wi-Fi 断开连接和恢复连接，还有一些其他的方式来进行测试。那么对于开发来说，我们总不可能抱着个电脑和手机到处跑，来复现这个不易模拟的场景吧？这是就要提到一个非常重要的工具：Charles。</p>
+<h2 id="Charles之抓包"><a href="#Charles之抓包" class="headerlink" title="Charles之抓包"></a>Charles之抓包</h2><p>说到 Charles ，大家想到的应该是抓包吧。和 fidder 一样，在拦截并分析网络请求方面有奇效。监控请求是每个移动端开发都需要掌握的一项技能。通过监控，可以看出每个页面发出了多少个请求，耗时多久，加载了什么资源和资源的大小。更有甚者，还可以看到哪些 SDK 在偷偷发送统计数据等等。</p>
+<p>先简单说明一下 Charles 是如何配合移动端来实现抓包的。<br>首先到 <a href="https://www.charlesproxy.com/" target="_blank" rel="external">Charles官网</a>下载 charles 的 PC 端，菜单栏的proxy 里面，macOSProxy 是本机代理，一般在调试手机代理时，都会关掉本机代理，只监视手机端请求。<br><img src="http://img.blog.csdn.net/20170826140442018?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGluc2hpanVuMzM=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br>如上图，点击 macOS Proxy 就可以取消勾选了。<br>在同个菜单栏 Proxy 下，SSL Proxying Settings 里面配置端口，如果是双向认证的话，可以为特定域名添加客户端证书 Client Certificates。<br><img src="http://img.blog.csdn.net/20170826141057686?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGluc2hpanVuMzM=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br>然后移步到菜单栏 Help 下面，安装 charles 的证书到手机端。<br><img src="http://img.blog.csdn.net/20170826141252268?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGluc2hpanVuMzM=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br>手机和电脑在同一网段内，将手机的代理写成电脑的 IP（charles 电脑端会弹框提示），授权下监视，然后客户端的请求都可以正常地看到了。</p>
+<h2 id="Charles之限速"><a href="#Charles之限速" class="headerlink" title="Charles之限速"></a>Charles之限速</h2><p>限速的前提是能代理抓包，在上面步骤中已经保证我们能够抓包了，现在来看下怎么限速。<br>限速主要在 Proxy 的 Throttle Settings 里面去设置一些网络参数。<br><img src="http://img.blog.csdn.net/20170826142443898?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGluc2hpanVuMzM=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br>Charles提供了许多中可供选择的网络条件，可以在 Throttle preset里面选取。<br>也可以自己手动配置参数，比如带宽包括上下行带宽、利用率（丢包率）等等。<br><img src="http://img.blog.csdn.net/20170826143108752?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGluc2hpanVuMzM=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<h2 id="Chrome前端调试"><a href="#Chrome前端调试" class="headerlink" title="Chrome前端调试"></a>Chrome前端调试</h2><p>现在混合开发比较流行，如何用手机连接浏览器调试呢。<br>首先，手机用usb连接到电脑，打开开发者模式授权，然后在chrome浏览器输入chrome://inspect，可以看到 webview。<br><img src="http://img.blog.csdn.net/20170826151316435?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGluc2hpanVuMzM=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br>点击 inspect 就可以调试具体的 webView 了，前端开发对这个界面应该不陌生吧。<br><img src="http://img.blog.csdn.net/20170826152032190?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGluc2hpanVuMzM=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+
+                <hr>
+                
+
+                <ul class="pager">
+                    
+                    
+                    <li class="next">
+                        <a href="/2017/06/22/随便扯一扯-https-认证方式/" data-toggle="tooltip" data-placement="top"
+                           title="随便扯一扯 https 认证方式">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+
+                
+
+            </div>
+
+            <div class="hidden-xs col-sm-3 toc-col">
+                <div class="toc-wrap">
+                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#移动端弱网测试及Chrome前端调试"><span class="toc-text">移动端弱网测试及Chrome前端调试</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#需求概述"><span class="toc-text">需求概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Charles之抓包"><span class="toc-text">Charles之抓包</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Charles之限速"><span class="toc-text">Charles之限速</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Chrome前端调试"><span class="toc-text">Chrome前端调试</span></a></li></ol></li></ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5 class="text-center">
+                        <a href="/tags/">FEATURED TAGS</a>
+                    </h5>
+                    <div class="tags">
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+        </div>
+
+    </div>
+</article>
+
+
+
+
+
+
+<!-- Footer -->
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <br>
+                <ul class="list-inline text-center">
+                
+                
+                
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/lin-shi-jun-30">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/lsj172933">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/jasonlinkinbright">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Jason Lin 2017
+                    <br>
+                    <span id="busuanzi_container_site_pv" style="font-size: 12px;">PV: <span id="busuanzi_value_site_pv"></span> Times</span>
+                    <br>
+                    Theme by <a href="https://haojen.github.io/">Haojen Ma</a>
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/blog.js"></script>
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://jasonlinkinbright.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("//cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- swiftype -->
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install','null','2.0.0');
+</script>
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!--wechat title img-->
+<img class="wechat-title-img" src="https://avatars2.githubusercontent.com/u/16745097?v=3&amp;u=d655524a8880764e100969efac730805add89319&amp;s=400">
+</body>
+
+</html>
